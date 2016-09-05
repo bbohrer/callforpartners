@@ -1,7 +1,10 @@
 package controllers
 
 import javax.inject._
+
 import play.api.libs.ws._
+import slick.codegen.SourceCodeGenerator
+import slick.driver.{PostgresDriver, SQLiteDriver}
 //import play.api._
 //import play.api.mvc._
 //import play.api.cache.Cache
@@ -34,8 +37,47 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
   val dbConfig = dbConfigProvider.get[JdbcProfile]
   import dbConfig.driver.api._
   def index = Action {
+    val model = dbConfig.db.run(PostgresDriver.createModel())
+    model.onSuccess{case model =>
+    }
+    Ok(views.html.index(null))
+    }
+
+  def codeGen =Action {
+    //val db = SQLiteDriver.simple.Database.forURL("jdbc:postgresql://localhost/callforpartners")
+    val session = dbConfig.db.createSession()
+    val model = dbConfig.db.run(PostgresDriver.createModel())
+    //val model = dbConfig.db.withSession({ implicit session => SQLiteDriver.createModel()})
+    model.onSuccess{case model =>
+      /** Works around a bug in Slick which causes its code generator to not mark auto-incremented columns as such.
+        * Since the row id (named _ID) is auto-incremented (or technically allocated uniquely in a way which usually
+        * coincides with auto-incrementing) we can safely say that column should always be auto-increment.*/
+      val FixedCodeGenerator = new SourceCodeGenerator (model) {
+        override def Table = new Table(_) {
+          override def Column = new Column(_) {
+            /* Slick's code generator tries very hard to prevent us from just saying the column is auto-increment (the
+            * autoInc method is final), so instead we look through the generated code for the column options and add an
+            * AutoInc option.
+            *
+            * This is admittedly cryptic and hacky. If you are confused, read the Tables.scala file output by the
+            * generator. */
+            override def code = {
+              if (name == "_Id") {
+                super.code.replaceFirst("O.PrimaryKey", "O.PrimaryKey, O.AutoInc")
+              } else {
+                super.code
+              }
+            }
+          }
+        }
+      }
+      FixedCodeGenerator.writeToFile(
+        "slick.driver.PostgresDriver","app/models",
+        "models","Tables","Tables.scala")
+    }
     Ok(views.html.index(null))
   }
+
 
   def doRegister = Action { request =>
     val name = request.body.asFormUrlEncoded.get("name")

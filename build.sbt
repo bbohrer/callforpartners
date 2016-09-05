@@ -14,7 +14,9 @@ libraryDependencies ++= Seq(
   "org.jscience" % "jscience" % "4.3.1",
   "com.typesafe.play" %% "play-slick" % "2.0.0",
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
-  "com.typesafe.slick" %% "slick" % "3.1.0"
+  "com.typesafe.slick" %% "slick" % "3.1.0",
+  "com.typesafe.slick" %% "slick-codegen" % "3.1.0"
+
 )
 
 libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _ )
