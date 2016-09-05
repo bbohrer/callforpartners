@@ -91,7 +91,7 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
       val saltLength = 512
       val (hash, salt) = Password.generateKey(password, iterations, saltLength)
       val query =
-        (Tables.Users.map(r => (r.email, r.passwordhash, r.passwordsalt, r.passworditerations)) returning Tables.Users.map(_.id)).+=(email, hash, salt, iterations)
+        (Tables.Users.map(r => (r.email, r.passwordhash, r.passwordsalt, r.passworditerations)) returning Tables.Users.map(_.id)).+=((email, hash, salt, iterations))
       dbConfig.db.run(query)
     }
     dbConfig.db.run(Tables.Users.filter(_.email === email).result)
