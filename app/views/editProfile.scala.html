@@ -1,0 +1,48 @@
+@()
+@main("Edit Profile") {
+  <div class="jumbotron text-center">
+    <div class="container">
+      <h1>Call For Partners</h1>
+      <p>Let's Publish Before We Perish</p>
+    </div>
+  </div>
+
+  <div class="container">
+  <p>You won't be able to get your collaboration on until we know a little more about you!
+  Give us some basic and not-so-basic information below:</p>
+
+  <form action="doEditProfile" method="post">
+    <div class="row">
+      <div class="col-md-4"></div>
+      <div class="col-md-2">
+        <p>Name</p>
+        <p>Age</p>
+        <p>Sex</p>
+        <p>Location</p>
+        <p>Academic Rank</p>
+        <p>Field</p>
+        <p>Concentration</p>
+        <p>Thesis Title (if applicable)</p>
+        <p>Thesis Advisor (if applicable)</p>
+        <p>Publications</p>
+        <p>About You</p>
+      </div>
+      <div class="col-md-4">
+        <p><input type="text" name="name"/></p>
+        <p><input type="text" name="age"/></p>
+        <p><input type="text" name="sex"/></p>
+        <p><input type="text" name="location"/></p>
+        <p><input type="text" name="academicRank"/></p>
+        <p><input type="text" name="field"/></p>
+        <p><input type="text" name="concentration"/></p>
+        <p><input type="text" name="thesisTitle"/></p>
+        <p><input type="text" name="thesisAdvisor"/></p>
+        <p><input type="text" name="publications"/></p>
+        <p><input type="text" name="aboutYou"/></p>
+      </div>
+
+    </div> <!-- row -->
+    <br/><center><input type="submit"/></center>
+  </form>
+</div>
+}

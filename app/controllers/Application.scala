@@ -77,6 +77,10 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
     Ok(views.html.index(null))
   }
 
+  def editProfile = Action { request =>
+    Ok(views.html.editProfile())
+  }
+
   def doRegister = Action.async { request =>
     val email = request.body.asFormUrlEncoded.get("email").head
     val password = request.body.asFormUrlEncoded.get("password").head
@@ -99,7 +103,7 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
         Ok(views.html.index("Error: Passwords did not match"))
       } else {
         createAccount()
-        Ok("The Happy Page")
+        Redirect("editProfile")
       }
     }
 
