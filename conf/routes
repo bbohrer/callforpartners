@@ -5,6 +5,7 @@
 # Home page
 GET     /                           @controllers.Application.index
 GET     /db                         @controllers.Application.db
+POST    /doRegister                 @controllers.Application.doRegister
 GET     /doRegister                 @controllers.Application.doRegister
 
 # Map static resources from the /public folder to the /assets URL path

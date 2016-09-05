@@ -2,6 +2,8 @@ package controllers
 
 import javax.inject._
 
+import models.Tables
+import models.Tables.UsersRow
 import play.api.libs.ws._
 import slick.codegen.SourceCodeGenerator
 import slick.driver.{PostgresDriver, SQLiteDriver}
@@ -37,13 +39,10 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
   val dbConfig = dbConfigProvider.get[JdbcProfile]
   import dbConfig.driver.api._
   def index = Action {
-    val model = dbConfig.db.run(PostgresDriver.createModel())
-    model.onSuccess{case model =>
-    }
     Ok(views.html.index(null))
     }
 
-  def codeGen =Action {
+  def codeGen = Action {
     //val db = SQLiteDriver.simple.Database.forURL("jdbc:postgresql://localhost/callforpartners")
     val session = dbConfig.db.createSession()
     val model = dbConfig.db.run(PostgresDriver.createModel())
@@ -78,10 +77,32 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
     Ok(views.html.index(null))
   }
 
+  def doRegister = Action.async { request =>
+    val email = request.body.asFormUrlEncoded.get("email").head
+    val password = request.body.asFormUrlEncoded.get("password").head
+    val confirmPassword = request.body.asFormUrlEncoded.get("confirmPassword").head
+    val passwordsMatch = Password.safeEquals(password, confirmPassword)
+    def createAccount() = {
+      val iterations = 10000
+      val saltLength = 512
+      val (hash, salt) = Password.generateKey(password, iterations, saltLength)
+      val query =
+        (Tables.Users.map(r => (r.email, r.passwordhash, r.passwordsalt, r.passworditerations)) returning Tables.Users.map(_.id)).+=(email, hash, salt, iterations)
+      dbConfig.db.run(query)
+    }
+    dbConfig.db.run(Tables.Users.filter(_.email === email).result)
+    .map {case matchingUsers =>
+      val available = matchingUsers.isEmpty
+      if (!available) {
+        Ok(views.html.index("Error: Account already exists: " + email))
+      } else if (!passwordsMatch) {
+        Ok(views.html.index("Error: Passwords did not match"))
+      } else {
+        createAccount()
+        Ok("The Happy Page")
+      }
+    }
 
-  def doRegister = Action { request =>
-    val name = request.body.asFormUrlEncoded.get("name")
-    Ok("")
     //Ok(views.html.doRegister(null,null,null,null))
   }
 

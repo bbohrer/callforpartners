@@ -14,24 +14,22 @@
     @message
   </div>
   }
-  <form>
+  <form action="doRegister" method="post">
     <div class="row">
     <div class="col-md-4"></div>
     <div class="col-md-2">
-      <p>Name</p>
       <p>Email</p>
       <p>Password</p>
       <p>Confirm Password</p>
     </div>
     <div class="col-md-4">
-      <p><input type="text" name="name"/></p>
       <p><input type="text" name="email"/></p>
-      <p><input type="text" name="password"/></p>
-      <p><input type="text" name="confirmPassword"/></p>
+      <p><input type="password" name="password"/></p>
+      <p><input type="password" name="confirmPassword"/></p>
     </div>
 
   </div> <!-- row -->
-    <br/><center><input type="submit" action="doRegister.html" method="post"/></center>
+    <br/><center><input type="submit"/></center>
   </form>
 
 </div>
