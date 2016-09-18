@@ -81,8 +81,28 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
     Ok(views.html.editProfile())
   }
 
+  def doEditProfile = Action.async { request =>
+    val email = request.body.asFormUrlEncoded.get("name").head
+    val age = request.body.asFormUrlEncoded.get("age").head
+    val sex = request.body.asFormUrlEncoded.get("sex").head
+    val location = request.body.asFormUrlEncoded.get("location").head
+    val academicRank = request.body.asFormUrlEncoded.get("academicRank").head
+    val field = request.body.asFormUrlEncoded.get("field").head
+    val concentration = request.body.asFormUrlEncoded.get("concentration").head
+    val thesisTitle = request.body.asFormUrlEncoded.get("thesisTitle").head
+    val thesisAdvisor = request.body.asFormUrlEncoded.get("thesisAdvisor").head
+    val publications = request.body.asFormUrlEncoded.get("publications").head
+    val aboutYou = request.body.asFormUrlEncoded.get("aboutYou").head
+    def editProfile() = {
+      val query =
+        ???
+      dbConfig.db.run(query)
+    }
+    Future {Redirect("editProfile")}
+  }
+
   def doRegister = Action.async { request =>
-    val email = request.body.asFormUrlEncoded.get("email").head
+    val email = request.body.asFormUrlEncoded.get("name").head
     val password = request.body.asFormUrlEncoded.get("password").head
     val confirmPassword = request.body.asFormUrlEncoded.get("confirmPassword").head
     val passwordsMatch = Password.safeEquals(password, confirmPassword)
@@ -91,6 +111,7 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
       val saltLength = 512
       val (hash, salt) = Password.generateKey(password, iterations, saltLength)
       val query =
+
         (Tables.Users.map(r => (r.email, r.passwordhash, r.passwordsalt, r.passworditerations)) returning Tables.Users.map(_.id)).+=((email, hash, salt, iterations))
       dbConfig.db.run(query)
     }
