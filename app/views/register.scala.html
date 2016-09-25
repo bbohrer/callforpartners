@@ -14,21 +14,27 @@
     @message
   </div>
   }
-  <form action="doLogin" method="post">
+  <h2>Registered? LOG IN!</h2>
+  <form action="doRegister" method="post">
     <div class="row">
     <div class="col-md-4"></div>
     <div class="col-md-2">
       <p>Email</p>
       <p>Password</p>
+      <p>Confirm Password</p>
+
     </div>
     <div class="col-md-4">
       <p><input type="text" name="email"/></p>
       <p><input type="password" name="password"/></p>
+      <p><input type="password" name="confirmPassword"/></p>
     </div>
 
   </div> <!-- row -->
     <br/><center><input type="submit"/></center>
   </form>
+
+  <h2>Not Registered? <a href="register.html">Register</a></h2>
 
 </div>
 

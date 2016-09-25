@@ -44,6 +44,10 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
     Ok(views.html.index(null))
     }
 
+  def register = Action {
+    Ok(views.html.register(null))
+  }
+
   def codeGen = Action {
     //val db = SQLiteDriver.simple.Database.forURL("jdbc:postgresql://localhost/callforpartners")
     val session = dbConfig.db.createSession()
@@ -114,6 +118,29 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
       }
       editProfile().map({ case _ => Redirect("editProfile")})
     }
+  }
+
+  def doLogin = Action.async { request =>
+    val email = request.body.asFormUrlEncoded.get("name").head
+    val password = request.body.asFormUrlEncoded.get("password").head
+    dbConfig.db.run(Tables.Users.filter(_.email === email).result)
+      .map {case matchingUsers =>
+        val available = matchingUsers.isEmpty
+        if (available) {
+          Ok(views.html.index("Error: Account does not exist or password incorrect: " + email))
+        } else {
+          val hash = matchingUsers.head.passwordhash
+          val salt = matchingUsers.head.passwordsalt
+          val iter = matchingUsers.head.passworditerations
+          val newHash = Password.hash(password.toCharArray, salt.getBytes("UTF-8"), iter)
+          val matches = Password.safeEquals(hash, newHash)
+          if (matches) {
+            Redirect("editProfile")
+          } else {
+            Ok(views.html.index("Error: Account does not exist or password incorrect: " + email))
+          }
+        }
+      }
   }
 
   def doRegister = Action.async { request =>
