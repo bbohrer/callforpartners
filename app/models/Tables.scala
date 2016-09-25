@@ -50,18 +50,25 @@ trait Tables {
    *  @param name Database column name SqlType(text), Default(None)
    *  @param description Database column description SqlType(text), Default(None)
    *  @param field Database column field SqlType(text), Default(None)
-   *  @param concentration Database column concentration SqlType(text), Default(None) */
-  case class ProfilesRow(id: Int, user: Int, name: Option[String] = None, description: Option[String] = None, field: Option[String] = None, concentration: Option[String] = None)
+   *  @param concentration Database column concentration SqlType(text), Default(None)
+   *  @param sex Database column sex SqlType(text), Default(None)
+   *  @param location Database column location SqlType(text), Default(None)
+   *  @param academicrank Database column academicrank SqlType(text), Default(None)
+   *  @param thesistitle Database column thesistitle SqlType(text), Default(None)
+   *  @param thesisadvisor Database column thesisadvisor SqlType(text), Default(None)
+   *  @param publications Database column publications SqlType(text), Default(None)
+   *  @param aboutyou Database column aboutyou SqlType(text), Default(None) */
+  case class ProfilesRow(id: Int, user: Int, name: Option[String] = None, description: Option[String] = None, field: Option[String] = None, concentration: Option[String] = None, sex: Option[String] = None, location: Option[String] = None, academicrank: Option[String] = None, thesistitle: Option[String] = None, thesisadvisor: Option[String] = None, publications: Option[String] = None, aboutyou: Option[String] = None)
   /** GetResult implicit for fetching ProfilesRow objects using plain SQL queries */
   implicit def GetResultProfilesRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[ProfilesRow] = GR{
     prs => import prs._
-    ProfilesRow.tupled((<<[Int], <<[Int], <<?[String], <<?[String], <<?[String], <<?[String]))
+    ProfilesRow.tupled((<<[Int], <<[Int], <<?[String], <<?[String], <<?[String], <<?[String], <<?[String], <<?[String], <<?[String], <<?[String], <<?[String], <<?[String], <<?[String]))
   }
   /** Table description of table profiles. Objects of this class serve as prototypes for rows in queries. */
   class Profiles(_tableTag: Tag) extends Table[ProfilesRow](_tableTag, "profiles") {
-    def * = (id, user, name, description, field, concentration) <> (ProfilesRow.tupled, ProfilesRow.unapply)
+    def * = (id, user, name, description, field, concentration, sex, location, academicrank, thesistitle, thesisadvisor, publications, aboutyou) <> (ProfilesRow.tupled, ProfilesRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(user), name, description, field, concentration).shaped.<>({r=>import r._; _1.map(_=> ProfilesRow.tupled((_1.get, _2.get, _3, _4, _5, _6)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(user), name, description, field, concentration, sex, location, academicrank, thesistitle, thesisadvisor, publications, aboutyou).shaped.<>({r=>import r._; _1.map(_=> ProfilesRow.tupled((_1.get, _2.get, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(serial), AutoInc */
     val id: Rep[Int] = column[Int]("id", O.AutoInc)
@@ -75,6 +82,20 @@ trait Tables {
     val field: Rep[Option[String]] = column[Option[String]]("field", O.Default(None))
     /** Database column concentration SqlType(text), Default(None) */
     val concentration: Rep[Option[String]] = column[Option[String]]("concentration", O.Default(None))
+    /** Database column sex SqlType(text), Default(None) */
+    val sex: Rep[Option[String]] = column[Option[String]]("sex", O.Default(None))
+    /** Database column location SqlType(text), Default(None) */
+    val location: Rep[Option[String]] = column[Option[String]]("location", O.Default(None))
+    /** Database column academicrank SqlType(text), Default(None) */
+    val academicrank: Rep[Option[String]] = column[Option[String]]("academicrank", O.Default(None))
+    /** Database column thesistitle SqlType(text), Default(None) */
+    val thesistitle: Rep[Option[String]] = column[Option[String]]("thesistitle", O.Default(None))
+    /** Database column thesisadvisor SqlType(text), Default(None) */
+    val thesisadvisor: Rep[Option[String]] = column[Option[String]]("thesisadvisor", O.Default(None))
+    /** Database column publications SqlType(text), Default(None) */
+    val publications: Rep[Option[String]] = column[Option[String]]("publications", O.Default(None))
+    /** Database column aboutyou SqlType(text), Default(None) */
+    val aboutyou: Rep[Option[String]] = column[Option[String]]("aboutyou", O.Default(None))
 
     /** Uniqueness Index over (id) (database name profiles_id_uindex) */
     val index1 = index("profiles_id_uindex", id, unique=true)

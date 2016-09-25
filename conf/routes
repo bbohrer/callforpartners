@@ -6,8 +6,9 @@
 GET     /                           @controllers.Application.index
 GET     /db                         @controllers.Application.db
 POST    /doRegister                 @controllers.Application.doRegister
-
+POST    /doEditProfile              @controllers.Application.doEditProfile
 GET     /editProfile                @controllers.Application.editProfile
+GET     /runCodeGen                 @controllers.Application.codeGen
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

@@ -7,6 +7,8 @@ import models.Tables.UsersRow
 import play.api.libs.ws._
 import slick.codegen.SourceCodeGenerator
 import slick.driver.{PostgresDriver, SQLiteDriver}
+
+import scala.concurrent.Future
 //import play.api._
 //import play.api.mvc._
 //import play.api.cache.Cache
@@ -81,24 +83,37 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
     Ok(views.html.editProfile())
   }
 
+  def userIdOfEmail(email:String) = {
+    val query = Tables.Users.filter(_.email === email).result
+    dbConfig.db.run(query)
+  }
+
+
   def doEditProfile = Action.async { request =>
     val email = request.body.asFormUrlEncoded.get("name").head
-    val age = request.body.asFormUrlEncoded.get("age").head
-    val sex = request.body.asFormUrlEncoded.get("sex").head
-    val location = request.body.asFormUrlEncoded.get("location").head
-    val academicRank = request.body.asFormUrlEncoded.get("academicRank").head
-    val field = request.body.asFormUrlEncoded.get("field").head
-    val concentration = request.body.asFormUrlEncoded.get("concentration").head
-    val thesisTitle = request.body.asFormUrlEncoded.get("thesisTitle").head
-    val thesisAdvisor = request.body.asFormUrlEncoded.get("thesisAdvisor").head
-    val publications = request.body.asFormUrlEncoded.get("publications").head
-    val aboutYou = request.body.asFormUrlEncoded.get("aboutYou").head
-    def editProfile() = {
-      val query =
-        ???
-      dbConfig.db.run(query)
+    val age = request.body.asFormUrlEncoded.get("age").headOption
+    val sex = request.body.asFormUrlEncoded.get("sex").headOption
+    val name = request.body.asFormUrlEncoded.get("name").headOption
+    val location = request.body.asFormUrlEncoded.get("location").headOption
+    val academicRank = request.body.asFormUrlEncoded.get("academicRank").headOption
+    val field = request.body.asFormUrlEncoded.get("field").headOption
+    val concentration = request.body.asFormUrlEncoded.get("concentration").headOption
+    val thesisTitle = request.body.asFormUrlEncoded.get("thesisTitle").headOption
+    val thesisAdvisor = request.body.asFormUrlEncoded.get("thesisAdvisor").headOption
+    val publications = request.body.asFormUrlEncoded.get("publications").headOption
+    val aboutYou = request.body.asFormUrlEncoded.get("aboutYou").headOption
+    val description = request.body.asFormUrlEncoded.get("description").headOption
+    userIdOfEmail(email).flatMap { case userId =>
+      def editProfile() = {
+        val id = userId.head.id
+        val query =
+          (Tables.Profiles.map(r =>
+            (r.concentration, r.description, r.field, r.academicrank, r.location, r.sex, r.thesistitle, r.thesisadvisor, r.publications, r.aboutyou, r.user, r.name)) returning Tables.Profiles.map(_.id))
+            .+=((concentration, description, field, academicRank, location, sex, thesisTitle, thesisAdvisor, publications, aboutYou, id, name))
+        dbConfig.db.run(query)
+      }
+      editProfile().map({ case _ => Redirect("editProfile")})
     }
-    Future {Redirect("editProfile")}
   }
 
   def doRegister = Action.async { request =>
@@ -127,8 +142,6 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
         Redirect("editProfile")
       }
     }
-
-    //Ok(views.html.doRegister(null,null,null,null))
   }
 
   def db = Action.async { implicit request =>
