@@ -40,9 +40,26 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Controller {
   val dbConfig = dbConfigProvider.get[JdbcProfile]
   import dbConfig.driver.api._
-  def index = Action {
-    Ok(views.html.index(null))
+  def connected(request:Request[AnyContent]):Boolean = {
+    val session = request.session
+    session.get("email").map { email =>
+      session.get("sessionKey").map { sessionKey =>
+        CrapSesh.stillValid(email, sessionKey)
+      }
+    } match {
+      case None => false
+      case Some(None) => false
+      case Some(Some(b)) => b
     }
+  }
+
+  def index = Action { request =>
+    if(connected(request)) {
+      Ok(views.html.index("Congrats you're logged in!"))
+    } else {
+      Ok(views.html.index("You ain't logged no in-wise"))
+    }
+  }
 
   def register = Action {
     Ok(views.html.register(null))
@@ -121,7 +138,7 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
   }
 
   def doLogin = Action.async { request =>
-    val email = request.body.asFormUrlEncoded.get("name").head
+    val email = request.body.asFormUrlEncoded.get("email").head
     val password = request.body.asFormUrlEncoded.get("password").head
     dbConfig.db.run(Tables.Users.filter(_.email === email).result)
       .map {case matchingUsers =>
@@ -135,7 +152,9 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
           val newHash = Password.hash(password.toCharArray, salt.getBytes("UTF-8"), iter)
           val matches = Password.safeEquals(hash, newHash)
           if (matches) {
-            Redirect("editProfile")
+            val sessionKey = CrapSesh.login(email)
+            Redirect("editProfile").withSession(
+              request.session + ("email" -> email) + ("sessionKey" -> sessionKey))
           } else {
             Ok(views.html.index("Error: Account does not exist or password incorrect: " + email))
           }
@@ -144,7 +163,7 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
   }
 
   def doRegister = Action.async { request =>
-    val email = request.body.asFormUrlEncoded.get("name").head
+    val email = request.body.asFormUrlEncoded.get("email").head
     val password = request.body.asFormUrlEncoded.get("password").head
     val confirmPassword = request.body.asFormUrlEncoded.get("confirmPassword").head
     val passwordsMatch = Password.safeEquals(password, confirmPassword)
@@ -166,7 +185,9 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
         Ok(views.html.index("Error: Passwords did not match"))
       } else {
         createAccount()
-        Redirect("editProfile")
+        val sessionKey = CrapSesh.login(email)
+        Redirect("editProfile").withSession(
+          request.session + ("email" -> email) + ("sessionKey" -> sessionKey))
       }
     }
   }

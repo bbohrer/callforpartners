@@ -28,12 +28,14 @@ object CrapSesh {
     key
   }
 
-  def stillValid(email:String): Boolean = {
+  def stillValid(email:String,key:String): Boolean = {
     get(email) match {
       case None => false
       case Some(rec) =>
         val theDur = Duration.between(rec.time, Instant.now())
-        if (theDur.compareTo(ttl) > 0) {
+        if (rec.token != key) {
+          false
+        } else if (theDur.compareTo(ttl) > 0) {
           logout(email)
           false
         } else {

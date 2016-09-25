@@ -6,7 +6,7 @@
 GET     /                           @controllers.Application.index
 GET     /register                   @controllers.Application.register
 GET     /db                         @controllers.Application.db
-POST    /doLogin                    @controllers.Application.doRegister
+POST    /doLogin                    @controllers.Application.doLogin
 POST    /doRegister                 @controllers.Application.doRegister
 POST    /doEditProfile              @controllers.Application.doEditProfile
 GET     /editProfile                @controllers.Application.editProfile
