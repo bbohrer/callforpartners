@@ -1,11 +1,13 @@
 package controllers
 
+import java.sql.DriverAction
 import javax.inject._
 
 import models.Tables
 import models.Tables.UsersRow
 import play.api.libs.ws._
 import slick.codegen.SourceCodeGenerator
+import slick.driver
 import slick.driver.{PostgresDriver, SQLiteDriver}
 
 import scala.concurrent.Future
@@ -109,9 +111,14 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
     dbConfig.db.run(query)
   }
 
+  def hasProfile(id:Int):Future[Boolean] = {
+    val query = Tables.Users.filter(_.id === id).result
+    dbConfig.db.run(query).map(_.nonEmpty)
+  }
+
 
   def doEditProfile = Action.async { request =>
-    val email = request.body.asFormUrlEncoded.get("name").head
+    val readableName = request.body.asFormUrlEncoded.get("name").head
     val age = request.body.asFormUrlEncoded.get("age").headOption
     val sex = request.body.asFormUrlEncoded.get("sex").headOption
     val name = request.body.asFormUrlEncoded.get("name").headOption
@@ -123,15 +130,30 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
     val thesisAdvisor = request.body.asFormUrlEncoded.get("thesisAdvisor").headOption
     val publications = request.body.asFormUrlEncoded.get("publications").headOption
     val aboutYou = request.body.asFormUrlEncoded.get("aboutYou").headOption
-    val description = request.body.asFormUrlEncoded.get("description").headOption
+    val email:String = request.session("email")
+    val sesh = request.session("sessionKey")
     userIdOfEmail(email).flatMap { case userId =>
       def editProfile() = {
-        val id = userId.head.id
-        val query =
-          (Tables.Profiles.map(r =>
-            (r.concentration, r.description, r.field, r.academicrank, r.location, r.sex, r.thesistitle, r.thesisadvisor, r.publications, r.aboutyou, r.user, r.name)) returning Tables.Profiles.map(_.id))
-            .+=((concentration, description, field, academicRank, location, sex, thesisTitle, thesisAdvisor, publications, aboutYou, id, name))
-        dbConfig.db.run(query)
+        val id:Int = userId.head.id
+        hasProfile(id).map { case canHas =>
+          if (canHas) {
+            val query =
+              Tables.Profiles
+                .filter(_.id === id)
+                .map(r =>
+                  (r.concentration, r.field, r.academicrank, r.location, r.sex, r.thesistitle, r.thesisadvisor, r.publications, r.aboutyou, r.user, r.name))
+                .update((concentration, field, academicRank, location, sex, thesisTitle, thesisAdvisor, publications, aboutYou, id, name))
+            dbConfig.db.run(query)
+
+          } else {
+            val query =
+              (Tables.Profiles.map(r =>
+                (r.concentration, r.field, r.academicrank, r.location, r.sex, r.thesistitle, r.thesisadvisor, r.publications, r.aboutyou, r.user, r.name)) returning Tables.Profiles.map(_.id))
+                .+=((concentration, field, academicRank, location, sex, thesisTitle, thesisAdvisor, publications, aboutYou, id, name))
+            dbConfig.db.run(query)
+          }
+        }
+
       }
       editProfile().map({ case _ => Redirect("editProfile")})
     }
