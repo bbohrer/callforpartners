@@ -6,6 +6,7 @@ import javax.inject._
 import models.Tables
 import models.Tables.UsersRow
 import play.api.libs.ws._
+import play.twirl.api.Html
 import slick.codegen.SourceCodeGenerator
 import slick.driver
 import slick.driver.{PostgresDriver, SQLiteDriver}
@@ -155,7 +156,7 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
         }
 
       }
-      editProfile().map({ case _ => Redirect("editProfile")})
+      editProfile().map({ case _ => Redirect("search")})
     }
   }
 
@@ -182,6 +183,14 @@ class Application @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Co
           }
         }
       }
+  }
+
+  def main = Action.async { request =>
+    Future { Ok(views.html.main("")(new Html(""))) }
+  }
+
+  def search = Action.async { request =>
+    Future { Ok(views.html.search("")) }
   }
 
   def doRegister = Action.async { request =>
